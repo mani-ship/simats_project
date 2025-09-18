@@ -1,0 +1,252 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f8f9fa;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("/static/adminui/logo1.png") no-repeat center center/cover;
+      filter: blur(7px);
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    .content-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-top: 60px; /* leave space for fixed Home button */
+    }
+
+    /* Fixed Home Button */
+    .home-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 9999;
+  transition: all 0.2s ease;
+}
+
+    .home-btn:hover {
+  transform: scale(1.2);
+  color: #070707ff; /* Bootstrap primary */
+}
+
+.add-faculty-btn {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 9999;
+  transition: all 0.2s ease;
+ 
+  
+}
+
+.add-faculty-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+  </style>
+</head>
+<body class="p-4">
+
+  <!-- Fixed Home Button -->
+  <a href="{% url 'dashboard' %}" class="home-btn">
+  <i class="bi bi-house-door fs-3 text-primary"></i>
+</a>
+
+  <div class="container content-box">
+
+    <!-- Header with Search and Add Faculty -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <!-- Search & Add Faculty -->
+      <div class="d-flex gap-2">
+        <form method="GET" class="d-flex search-bar">
+          <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by Faculty ID...">
+          <button class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
+        </form>
+        <button class="btn btn-success add-faculty-btn" data-bs-toggle="modal" data-bs-target="#addFacultyModal">
+  <i class="bi bi-plus-lg"> Add Faculty</i>
+</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Faculty Table -->
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Faculty ID</th>
+          <th>Gender</th>
+          <th>Department</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in faculties %}
+        <tr>
+          <td>{{ f.username }}</td>
+          <td>{{ f.faculty_id }}</td>
+          <td>{{ f.gender }}</td>
+          <td>{{ f.department }}</td>
+          <td>
+            <!-- Edit Button -->
+            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editFacultyModal{{ f.id }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <!-- Delete -->
+            <a href="{% url 'delete_faculty' f.id %}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Are you sure?')">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+
+        <!-- Edit Faculty Modal -->
+        <div class="modal fade" id="editFacultyModal{{ f.id }}" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="POST" action="{% url 'edit_faculty' f.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit Faculty</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" value="{{ f.username }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="text" name="password" class="form-control" value="{{ f.password }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Faculty ID</label>
+                    <input type="text" name="facultyId" class="form-control" value="{{ f.faculty_id }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Gender</label>
+                    <div class="d-flex gap-3">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="male{{ f.id }}" value="male" {% if f.gender == "male" %}checked{% endif %}>
+                        <label class="form-check-label" for="male{{ f.id }}">Male</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="female{{ f.id }}" value="female" {% if f.gender == "female" %}checked{% endif %}>
+                        <label class="form-check-label" for="female{{ f.id }}">Female</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="other{{ f.id }}" value="other" {% if f.gender == "other" %}checked{% endif %}>
+                        <label class="form-check-label" for="other{{ f.id }}">Other</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Department</label>
+                    <input type="text" name="department" class="form-control" value="{{ f.department }}" required>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Update</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Faculty Modal -->
+  <div class="modal fade" id="addFacultyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form method="POST" action="{% url 'add_faculty' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title">+ Add Faculty</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Faculty ID</label>
+              <input type="text" name="facultyId" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Gender</label>
+              <div class="d-flex gap-3">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="gender" id="addMale" value="male" checked>
+                  <label class="form-check-label" for="addMale">Male</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="gender" id="addFemale" value="female">
+                  <label class="form-check-label" for="addFemale">Female</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="gender" id="addOther" value="other">
+                  <label class="form-check-label" for="addOther">Other</label>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Department</label>
+              <input type="text" name="department" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Add</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      {% if messages %}
+        {% for msg in messages %}
+          {% if msg.tags == 'error' %}
+            var addFacultyModal = new bootstrap.Modal(document.getElementById('addFacultyModal'));
+            addFacultyModal.show();
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    });
+  </script>
+</body>
+</html>

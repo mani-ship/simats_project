@@ -1,0 +1,224 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register & Login</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+   body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("/static/adminui/logo1.png") no-repeat center center/cover;
+      filter: blur(7px);
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      overflow: hidden;
+      width: 450px;
+      max-height: 650px;
+    }
+
+    .tab-card {
+      display: flex;
+      height: 60px;
+      padding: 10px;
+      margin-top: 0;
+    }
+
+    .tab-card button {
+      flex: 1;
+      border: none;
+      background: #f2f2f2;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .tab-card button.active {
+      background-color: #2575fc;
+      color: #fff;
+    }
+
+    .form-card {
+      padding: 12px;
+      height: auto;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .form-control, .form-select {
+      font-size: 13px;
+      padding: 6px 10px;
+    }
+
+    .btn {
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .form-check-label {
+      font-size: 13px;
+      word-spacing: 50pt;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-auto">
+        
+        <!-- Tab Card -->
+        <div class="card mb-3">
+          <div class="tab-card">
+            <button id="registerTab" class="active" onclick="showForm('register')">Register</button>
+            <button id="loginTab" onclick="showForm('login')">Login</button>
+          </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card form-card">
+          <!-- Register Form -->
+          <div id="registerForm">
+            <h4 class="mb-3">Welcome 👋</h4>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="form_type" value="register">
+
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="full_name" class="form-control" placeholder="Enter your name" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Gender</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gender" value="Male" id="male" required>
+                    <label class="form-check-label" for="male">Male</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gender" value="Female" id="female">
+                    <label class="form-check-label" for="female">Female</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gender" value="Other" id="other">
+                    <label class="form-check-label" for="other">Other</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Student ID</label>
+                <input type="text" name="student_id" class="form-control" placeholder="Enter student ID" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Year</label>
+                  <select name="year" class="form-select" required>
+                    <option>2020</option><option>2021</option><option>2022</option>
+                    <option>2023</option><option>2024</option><option>2025</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Semester</label>
+                  <select name="semester" class="form-select" required>
+                    <option>1</option><option>2</option><option>3</option><option>4</option>
+                    <option>5</option><option>6</option><option>7</option><option>8</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Department</label>
+                <select name="department" class="form-select" required>
+                  <option>ECE</option><option>CSE</option><option>IT</option><option>EEE</option>
+                  <option>MECH</option><option>AIDS</option><option>AIML</option><option>CIVIL</option>
+                  <option>BIO-INFO</option><option>BIO-TECH</option><option>CYBER-SECURITY</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+          </div>
+
+          <!-- Login Form -->
+          <div id="loginForm" style="display:none;">
+            <h4 class="mb-3">Welcome 🔑</h4>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="form_type" value="login">
+
+              <div class="mb-3">
+                <label class="form-label">Student ID</label>
+                <input type="text" name="student_id" class="form-control" placeholder="Enter student ID" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Show messages -->
+        {% if messages %}
+          <div class="mt-3">
+            {% for msg in messages %}
+              <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showForm(type) {
+      document.getElementById('registerForm').style.display = (type === 'register') ? 'block' : 'none';
+      document.getElementById('loginForm').style.display = (type === 'login') ? 'block' : 'none';
+
+      document.getElementById('registerTab').classList.remove('active');
+      document.getElementById('loginTab').classList.remove('active');
+
+      if (type === 'register') {
+        document.getElementById('registerTab').classList.add('active');
+      } else {
+        document.getElementById('loginTab').classList.add('active');
+      }
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
