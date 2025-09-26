@@ -1,0 +1,126 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+ .navbar {
+      box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    }
+
+    .navbar .container {
+      justify-content: center;
+    }
+
+
+/* navbar styles */
+.navbar-collapse {
+    flex-grow: 0 !important;
+}
+
+.nav-link {
+    color: #000 !important;
+}
+
+
+.navbar-text {
+    font-size: 35px;
+    font-weight: bold;
+    font-family: 'Times New Roman', Times, serif;
+    color: #000 !important;
+}
+
+@media (max-width:1024px) {
+    .sse_logo {
+        width: 37px !important;
+    }
+}
+
+/* Default styles are already fine for large screens */
+
+@media (max-width: 992px) {
+
+    /* Medium devices (Tablets) */
+    .navbar-text {
+        font-size: 20px;
+    }
+
+    .nav-item a {
+        font-size: 14px;
+    }
+
+    .navbar-brand img {
+        width: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Small devices (Mobile) */
+    .navbar-collapse {
+        background-color: #fff;
+        /* Optional: Add background for mobile menu */
+        border-top: 1px solid #ddd;
+    }
+
+    .nav-link {
+        padding: 10px 15px;
+        text-align: center;
+    }
+
+    .navbar-text {
+        font-size: 21px ;
+        text-align: center;
+    }
+
+    .navbar-brand img {
+        width: 35px;
+    }
+
+    .nav-item {
+        border-bottom: 1px solid #ddd;
+    }
+
+    .nav-item:hover a {
+        color: #0056b3 !important;
+    }
+}
+
+@media (max-width:425px){
+    .navbar-text {
+        font-size: 18px !important;
+        text-align: center;
+    }
+}
+
+@media (max-width:375px){
+    .navbar-text{
+        font-size: 14px !important;
+    }
+
+    
+}
+
+@media(max-width:320px) {
+    .navbar-text {
+        font-size: 14px !important;
+        text-align: center;
+    }
+
+    .sse_logo img {
+        width: 26px !important;
+    }
+}
+
+
+.navbar-brand .sse_logo {
+    width: 37px;
+}
+
+.navbar-brand .simats_logo {
+    width: 50px;
+}
+
+.navbar-brand {
+    margin: 0 !important;
+
+}

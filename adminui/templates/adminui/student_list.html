@@ -14,86 +14,233 @@
       font-family: 'Poppins', sans-serif;
       background: #f8f9fa;
       margin: 0;
-      padding: 20px;
     }
-
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: url("/static/adminui/logo1.png") no-repeat center center/cover;
       filter: blur(7px);
       opacity: 0.5;
       z-index: -1;
     }
 
-    /* Home button (top-left fixed) */
-    .home-btn {
+    .sidebar {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 280px;
+      height: 100vh;
       position: fixed;
-      top: 15px;
-      left: 15px;
-      z-index: 1000;
-      transition: all 0.2s ease;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
     }
-    .home-btn:hover {
-      transform: scale(1.2);
+    .sidebar a {
+      display: block;
+      padding: 8px 12px;
+      color: #000;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+    .sidebar a:hover, .sidebar .active {
+      background: #e9f0ff;
       color: #0d6efd;
     }
 
-    .container {
-      margin-top: 60px; /* push content down below home button */
+    .content-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      min-height: 100vh;
+      margin-left: 300px;
+      display: flex;
+      flex-direction: column;
     }
 
     .card {
       border-radius: 12px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
+
+    .pagination {
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .pagination .page-link {
+      margin: 0 5px;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .pagination .page-link:hover {
+      background-color: #a3a7aaff;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(13,110,253,0.3);
+    }
+    .pagination .active .page-link {
+      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      color: #fff !important;
+      box-shadow: 0 4px 15px rgba(13,110,253,0.4);
+    }
   </style>
 </head>
 <body>
 
-  <!-- Home Icon -->
-  <a href="{% url 'dashboard' %}" class="home-btn">
-    <i class="bi bi-house-door fs-3 text-primary"></i>
-  </a>
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column">
+    <div class="text-center mb-4">
+      <img src="/static/adminui/logo1.png" alt="Logo" class="img-fluid mb-2" style="max-width: 80px"/>
+      <h5>Administration</h5>
+    </div>
+    <nav class="flex-grow-1 d-flex flex-column">
+      <h6 style="color: #0d6efd">Admin</h6>
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'faculty_list' %}">Faculty</a>
+      <a href="{% url 'problem_upload' %}">Add Problem</a>
+      <h6 style="color: #0d6efd">Student</h6>
+      <a href="{% url 'student_list' %}" class="active">Change Password</a>
+      <a href="{% url 'logout' %}" class="text-danger mt-auto">Logout</a>
+    </nav>
+  </div>
 
-  <div class="container">
-    <div class="card p-4">
-      <h4 class="mb-3">Registered Students</h4>
+  <!-- Main Content -->
+  <div class="content-box">
+    <div class="row">
+      <div class="col-12">
+        <div class="card p-4">
+          <h4 class="mb-3">Registered Students</h4>
 
-      <!-- Search Bar -->
-      <form method="get" class="mb-3 d-flex">
-        <input type="text" name="q" class="form-control me-2" placeholder="Search by ID or Name" value="{{ query }}">
-        <button type="submit" class="btn btn-primary">Search</button>
-      </form>
+          <!-- ✅ Messages block -->
+          {% if messages %}
+            {% for msg in messages %}
+              <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+                {{ msg }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
 
-      <!-- Student Table -->
-      <table class="table table-bordered table-hover">
-        <thead class="table-light">
-          <tr>
-            <th>Student ID</th>
-            <th>Full Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for student in students %}
-          <tr>
-            <td>{{ student.student_id }}</td>
-            <td>{{ student.full_name }}</td>
-            <td>
-              <a href="{% url 'student_change_password' student.id %}" class="btn btn-sm btn-warning">
-                Change Password
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="3" class="text-center">No students found</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          <!-- Search Bar -->
+          <form method="get" class="mb-3 d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Search by ID or Name" value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+
+          <!-- Student Table -->
+          <table class="table table-bordered table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in page_obj %}
+              <tr>
+                <td>{{ student.student_id }}</td>
+                <td>{{ student.full_name }}</td>
+                <td>
+                  <!-- Change Password Modal Button -->
+                  <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal{{ student.id }}">
+                    Change Password
+                  </button>
+
+                  <!-- Modal -->
+                  <div class="modal fade" id="changePasswordModal{{ student.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <form method="POST" action="{% url 'student_change_password' student.id %}">
+                          {% csrf_token %}
+                          <div class="modal-header">
+                            <h5 class="modal-title">Change Password</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                            <!-- ✅ Place error inside modal if available -->
+                            {% if messages %}
+                              {% for msg in messages %}
+                                {% if "Passwords do not match" in msg.message %}
+                                  <div class="alert alert-danger">{{ msg }}</div>
+                                {% endif %}
+                              {% endfor %}
+                            {% endif %}
+
+                            <div class="mb-3">
+                              <label class="form-label">Student ID</label>
+                              <input type="text" class="form-control" value="{{ student.student_id }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                              <label class="form-label">New Password</label>
+                              <input type="password" name="new_password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                              <label class="form-label">Confirm Password</label>
+                              <input type="password" name="confirm_password" class="form-control" required>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Save</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- End Modal -->
+
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center">No students found</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- Pagination -->
+          {% if page_obj.has_other_pages %}
+          <div class="d-flex justify-content-center mt-4">
+            <nav>
+              <ul class="pagination pagination-lg">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link rounded-circle shadow-sm" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">&laquo;</a>
+                  </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                    <li class="page-item active">
+                      <span class="page-link rounded-circle shadow-sm bg-primary border-0 text-white">{{ num }}</span>
+                    </li>
+                  {% else %}
+                    <li class="page-item">
+                      <a class="page-link rounded-circle shadow-sm border-0" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link rounded-circle shadow-sm" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">&raquo;</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
     </div>
   </div>
 

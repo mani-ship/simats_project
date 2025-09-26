@@ -35,20 +35,26 @@ def faculty_login(request):
 
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from student.models import Submission
-
+from django.core.paginator import Paginator
 from .decorators import faculty_login_required
+from student.models import Submission
 
 @faculty_login_required
 def faculty_dashboard(request):
-    # Fetch all submissions with student info
-    submissions = Submission.objects.select_related('student', 'problem').all().order_by('-submitted_at')
-    
+    faculty_username = request.session.get('faculty_username')
+    if not faculty_username:
+        return redirect('faculty_login')
+
+    submissions_list = Submission.objects.select_related("student", "problem").order_by("-submitted_at")
+
+    # Pagination: 10 submissions per page
+    paginator = Paginator(submissions_list, 7)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "faculty/dashboard.html", {
-        "faculty_username": request.user.username,
-        "submissions": submissions
+        "faculty_username": faculty_username,
+        "page_obj": page_obj,  # pass paginated object
     })
 
 
@@ -57,30 +63,43 @@ def faculty_dashboard(request):
 
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from student.models import Submission
 
 def evaluate_submission(request, submission_id):
     submission = get_object_or_404(Submission, id=submission_id)
+    error_message = ""  # Initialize
 
     if request.method == "POST":
-        marks = request.POST.get("marks")
-        remarks = request.POST.get("remarks")
+        marks_input = request.POST.get("marks")
+        remarks = request.POST.get("remarks", "").strip()
 
         try:
-            marks = int(marks)
-            if marks > submission.problem.total_marks:
-                messages.error(request, f"Marks cannot exceed {submission.problem.total_marks}")
+            marks = int(marks_input)
+            if marks < 0:
+                error_message = "Marks cannot be negative."
+            elif marks > submission.problem.total_marks:
+                error_message = f"Marks cannot exceed {submission.problem.total_marks}."
             else:
                 submission.faculty_marks = marks
                 submission.faculty_remarks = remarks
-                submission.save()  # ✅ Saves in database
-                messages.success(request, "Evaluation saved successfully!")
-                return redirect("faculty_dashboard")
-        except ValueError:
-            messages.error(request, "Please enter valid marks.")
 
-    return render(request, "faculty/evaluate_submission.html", {"submission": submission})
+                # Store faculty username from session
+                faculty_username = request.session.get("faculty_username")
+                if faculty_username:
+                    submission.faculty_name = faculty_username
+
+                submission.save()
+                return redirect("faculty_dashboard")
+
+        except (ValueError, TypeError):
+            error_message = "Please enter a valid number for marks."
+
+    return render(request, "faculty/evaluate_submission.html", {
+        "submission": submission,
+        "error_message": error_message
+    })
+
+
 
 
 

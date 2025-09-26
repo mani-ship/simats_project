@@ -26,10 +26,36 @@ def login_view(request):
 
     return render(request, "adminui/login.html")
 
-@login_required
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from student.models import Student, Submission
+from adminui.models import Problem, Faculty  # if you have a separate Faculty model
 
 def dashboard(request):
-    return render(request, "adminui/dashboard.html")
+    student_count = Student.objects.count()
+    faculty_count = Faculty.objects.count()
+    problem_count = Problem.objects.count()
+
+    # Get all submissions with related student, faculty, problem (sorted latest first)
+    submissions = Submission.objects.select_related("student", "faculty", "problem").order_by("-submitted_at")
+
+    # ✅ Add pagination
+    paginator = Paginator(submissions, 6)  # show 6 submissions per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "student_count": student_count,
+        "faculty_count": faculty_count,
+        "problem_count": problem_count,
+        "page_obj": page_obj,   # 👈 send paginated object instead of submissions
+    }
+    return render(request, "adminui/dashboard.html", context)
+
+
+
+
+
 
 def logout_view(request):
     logout(request)
@@ -39,18 +65,28 @@ def logout_view(request):
 
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.core.paginator import Paginator
+from django.shortcuts import render
 from .models import Faculty
 
-# List & Search Faculties
 def faculty_list(request):
     search = request.GET.get("search", "")
+    faculties = Faculty.objects.all()
+
+    # Search filter
     if search:
-        faculties = Faculty.objects.filter(faculty_id__icontains=search)
-    else:
-        faculties = Faculty.objects.all()
-    return render(request, "adminui/faculty_list.html", {"faculties": faculties})
+        faculties = faculties.filter(faculty_id__icontains=search)
+
+    # Pagination (5 per page)
+    paginator = Paginator(faculties, 7)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "search": search,  # keep search value in template
+    }
+    return render(request, "adminui/faculty_list.html", context)
 
 
 # Add Faculty
@@ -130,8 +166,9 @@ def delete_faculty(request, pk):
     return redirect("faculty_list")
 
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Problem
 from datetime import datetime
 
@@ -139,7 +176,7 @@ def problem_upload(request):
     if request.method == "POST":
         title = request.POST.get("title")
         description = request.POST.get("description")
-        total_marks = request.POST.get("total_marks")   # ✅ FIX
+        total_marks = request.POST.get("total_marks")
 
         if not title or not description or not total_marks:
             messages.error(request, "All fields are required!")
@@ -148,7 +185,7 @@ def problem_upload(request):
         Problem.objects.create(
             title=title,
             description=description,
-            total_marks=total_marks   # ✅ FIX
+            total_marks=total_marks
         )
         messages.success(request, "Problem uploaded successfully!")
         return redirect('problem_upload')
@@ -159,13 +196,19 @@ def problem_upload(request):
     if selected_date:
         problems = problems.filter(created_at__date=selected_date)
 
+    # --- Pagination ---
+    paginator = Paginator(problems, 5)  # 5 problems per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'problems': problems,
+        'problems': page_obj,
         'today': datetime.today().strftime('%d.%m.%Y'),
         'now_time': datetime.now().strftime('%I:%M %p'),
         'selected_date': selected_date
     }
     return render(request, "adminui/problem_upload.html", context)
+
 
 
 
@@ -179,21 +222,30 @@ def delete_problem(request, pk):
 # adminui/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.core.paginator import Paginator
 from student.models import Student
 
-# ✅ Show all registered students
+# ✅ Show all registered students with pagination
 def student_list(request):
     query = request.GET.get("q", "")
+    
     if query:
         students = Student.objects.filter(full_name__icontains=query) | Student.objects.filter(student_id__icontains=query)
     else:
         students = Student.objects.all()
 
-    return render(request, "adminui/student_list.html", {"students": students, "query": query})
+    paginator = Paginator(students, 8)  # 10 students per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "adminui/student_list.html", {
+        "page_obj": page_obj,
+        "query": query
+    })
 
 
 # ✅ Change password page
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from student.models import Student
 
@@ -207,11 +259,11 @@ def student_change_password(request, student_id):
         if new_password != confirm_password:
             messages.error(request, "Passwords do not match!")
         else:
-            # ✅ Use set_password() so password gets hashed
-            student.set_password(new_password)
+            student.set_password(new_password)  # ✅ hashed
             student.save()
             messages.success(request, f"Password updated for {student.full_name}")
-            return redirect("student_list")  # back to student list page
 
-    return render(request, "adminui/student_change_password.html", {"student": student})
+    # always redirect back to student list
+    return redirect("student_list")
+
 

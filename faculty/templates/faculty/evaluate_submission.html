@@ -1,21 +1,25 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Evaluation</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
       margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: auto;
     }
     body::before {
       content: "";
-      position: absolute;
+      position: fixed;
       inset: 0;
       background: url("/static/adminui/logo1.png") no-repeat center center/cover;
       filter: blur(7px);
@@ -93,9 +97,16 @@
 <div class="evaluation-box">
   <h2 class="mb-4 text-center">📑 Faculty Evaluation</h2>
 
+  <!-- Error Message -->
+  {% if error_message %}
+    <div class="alert alert-danger mb-3" role="alert">
+      {{ error_message }}
+    </div>
+  {% endif %}
+
   <!-- Student Info -->
   <div class="info-text">
-    <strong>👤 Student:</strong> {{ submission.student.username }} (ID: {{ submission.student.id }})<br>
+    <strong>👤 Student:</strong> {{ submission.student.full_name }} (ID: {{ submission.student.student_id }})<br>
     <strong>📂 Submitted File:</strong> 
     <a href="{{ submission.file.url }}" target="_blank" class="file-link">View File</a>
   </div>
@@ -138,7 +149,6 @@
   </form>
 </div>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

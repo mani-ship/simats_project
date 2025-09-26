@@ -23,8 +23,10 @@ class Student(models.Model):
 
 
 from django.db import models
+from django.contrib.auth.models import User
 from adminui.models import Problem
-from student.models import Student  # use your custom Student model
+from student.models import Student
+
 
 class Submission(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name="submissions")
@@ -32,8 +34,26 @@ class Submission(models.Model):
     file = models.FileField(upload_to="submissions/")
     submitted_at = models.DateTimeField(auto_now_add=True)
 
+    faculty = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="evaluated_submissions"
+    )
+    faculty_name = models.CharField(max_length=255, null=True, blank=True)  # store snapshot
     faculty_marks = models.IntegerField(null=True, blank=True)
-    faculty_remarks = models.TextField(null=True, blank=True)
+    faculty_remarks = models.TextField()
+
+
+    def save(self, *args, **kwargs):
+        # store faculty name when faculty is assigned
+        if self.faculty:
+            self.faculty_name = self.faculty.get_full_name() or self.faculty.username
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.student.full_name} - {self.problem.title}"
+        faculty_display = self.faculty_name if self.faculty_name else "Not Evaluated"
+        return f"{self.student.full_name} - {self.problem.title} (Evaluated by: {faculty_display})"
+
+

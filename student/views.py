@@ -46,7 +46,7 @@ def register_login(request):
                     # Store student session
                     request.session["student_id"] = student.id
                     request.session["student_name"] = student.full_name
-                    messages.success(request, f"Welcome {student.full_name}!")
+                    # messages.success(request, f"Welcome {student.full_name}!")
                     return redirect("student_dashboard")
                 else:
                     messages.error(request, "Incorrect password.")
@@ -59,6 +59,7 @@ def register_login(request):
 # ----- Student Dashboard -----
 # student/views.py
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from student.models import Student
 from adminui.models import Problem
 from .models import Submission
@@ -71,20 +72,26 @@ def student_dashboard(request):
 
     student = get_object_or_404(Student, id=student_id)
 
-    # All submissions of this student
-    submissions = Submission.objects.filter(student=student).order_by("-submitted_at")
+    # All submissions of this student, newest first
+    submissions_list = Submission.objects.filter(student=student).order_by("-submitted_at")
+
+    # Pagination: 5 submissions per page
+    paginator = Paginator(submissions_list, 3)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     # Problems student already submitted
-    submitted_problem_ids = submissions.values_list("problem_id", flat=True)
+    submitted_problem_ids = submissions_list.values_list("problem_id", flat=True)
 
     # Next available problem
     next_problem = Problem.objects.exclude(id__in=submitted_problem_ids).order_by("created_at").first()
 
     return render(request, "student/student_dashboard.html", {
-        "student": student,
-        "next_problem": next_problem,   # next unsolved problem
-        "submissions": submissions,     # list of all submissions
-    })
+    "student": student,
+    "next_problem": next_problem,
+    "page_obj": page_obj,  # paginated submissions
+})
+
 
 
 
