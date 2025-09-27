@@ -5,35 +5,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Dashboard</title>
-   <!-- Favicon -->
+  <!-- Favicon -->
   <link rel="shortcut icon" href="{% static 'adminui/favicon.ico' %}" type="image/x-icon">
 
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- External CSS -->
+  <!-- External CSS -->
   <link rel="stylesheet" href="{% static 'adminui/css/header.css' %}">
- <style>
-     body {
+  <style>
+    body {
       font-family: 'Poppins', sans-serif;
       background: #f8f9fa;
-      margin: 0;
-      padding: 0;
     }
 
-     /* Background blur */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      {% comment %} background: url("{% static 'adminui/watermarklogo.jpeg' %}") no-repeat center center/contain; {% endcomment %}
-      /* filter: blur(7px); */
-      opacity: 0.5;
-      z-index: -1;
-    }
-
-    
     .container-box {
       background: #fff;
       border-radius: 12px;
@@ -45,14 +31,11 @@
       max-width: 350px;
     }
 
-    .logo {
-      height: 50px;
-    }
-
     .table th {
       background: #f1f1f1;
     }
-     .navbar {
+
+    .navbar {
       box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     }
 
@@ -61,65 +44,63 @@
     }
 
     .pagination .page-link {
-    margin: 0 5px;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    color: #007bff;
-}
+      margin: 0 5px;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      color: #007bff;
+    }
 
-.pagination .page-link:hover {
-    background-color: #007bff;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,123,255,0.3);
-}
+    .pagination .page-link:hover {
+      background-color: #007bff;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+    }
 
-.pagination .active .page-link {
-    background: linear-gradient(135deg, #007bff, #00c6ff);
-    color: #fff !important;
-    box-shadow: 0 4px 15px rgba(0,123,255,0.4);
-}
-
-
+    .pagination .active .page-link {
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      color: #fff !important;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.4);
+    }
   </style>
 </head>
 <body>
 
-   <!-- Header -->
- <nav class="navbar navbar-expand-lg navbar-light bg-light">
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container d-flex justify-content-center">
     <div class="d-flex align-items-center" style="gap:20px">
       <a class="navbar-brand" href="#">
         <img src="{% static 'adminui/logo1.png' %}" class="simats_logo" alt="SIMATS Logo">
       </a>
-
       <div class="navbar-text fw-bold">SIMATS EXAMINATION</div>
-
       <a class="navbar-brand" href="#">
         <img src="{% static 'adminui/sse_logo.webp' %}" class="sse_logo" alt="SSE Logo">
       </a>
     </div>
   </div>
 </nav>
-<div class="container py-4">
 
+<div class="container py-4">
   <!-- Top Bar -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center">
-      <img src="{% static 'adminui/logo1.png' %}" alt="Logo" class="logo me-2">
-      <h5 class="mb-0">Welcome {{ faculty_username }}</h5>
+      <img src="{% static 'adminui/logo1.png' %}" alt="Logo" class="logo me-2" style="height:50px;">
+      <h5 class="mb-0">Welcome  {{ faculty_username }}</h5>
+    </div>
 
-    </div>
-    <div class="input-group search-box">
-      <input type="text" id="searchInput" class="form-control" placeholder="Search by name or student ID...">
-      <button class="btn btn-primary" type="button"><i class="bi bi-search"></i></button>
-    </div>
+    <!-- Search Form -->
+    <form method="get" class="input-group search-box">
+      <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search by name or student ID...">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+
     <div>
       <a href="{% url 'faculty_logout' %}" class="btn btn-danger">Logout</a>
     </div>
@@ -128,7 +109,7 @@
   <!-- Submissions Table -->
   <div class="container-box table-responsive">
     <h4 class="mb-3">Student Submissions</h4>
-    <table class="table table-striped table-hover align-middle text-center" id="submissionTable">
+    <table class="table table-striped table-hover align-middle text-center">
       <thead>
         <tr>
           <th>Name</th>
@@ -142,8 +123,8 @@
       <tbody>
         {% for submission in page_obj %}
         <tr>
-          <td class="student-name">{{ submission.student.full_name }}</td>
-          <td class="student-id">{{ submission.student.student_id }}</td>
+          <td>{{ submission.student.full_name }}</td>
+          <td>{{ submission.student.student_id }}</td>
           <td>{{ submission.problem.title }}</td>
           <td><a href="{{ submission.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View File</a></td>
           <td>{{ submission.submitted_at|date:"Y-m-d H:i" }}</td>
@@ -165,6 +146,7 @@
     </table>
   </div>
 </div>
+
 <!-- Pagination -->
 {% if page_obj.has_other_pages %}
 <div class="d-flex justify-content-center mt-4">
@@ -172,7 +154,8 @@
     <ul class="pagination">
       {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link rounded-circle" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+          <a class="page-link rounded-circle"
+             href="?search={{ search }}&page={{ page_obj.previous_page_number }}">&laquo;</a>
         </li>
       {% endif %}
 
@@ -184,7 +167,8 @@
             </li>
           {% else %}
             <li class="page-item">
-              <a class="page-link rounded-circle" href="?page={{ num }}">{{ num }}</a>
+              <a class="page-link rounded-circle"
+                 href="?search={{ search }}&page={{ num }}">{{ num }}</a>
             </li>
           {% endif %}
         {% endif %}
@@ -192,7 +176,8 @@
 
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link rounded-circle" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+          <a class="page-link rounded-circle"
+             href="?search={{ search }}&page={{ page_obj.next_page_number }}">&raquo;</a>
         </li>
       {% endif %}
     </ul>
@@ -201,17 +186,5 @@
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-document.getElementById("searchInput").addEventListener("keyup", function () {
-  let filter = this.value.toLowerCase();
-  document.querySelectorAll("#submissionTable tbody tr").forEach(row => {
-    let name = row.querySelector(".student-name").innerText.toLowerCase();
-    let studentId = row.querySelector(".student-id").innerText.toLowerCase();
-    row.style.display = (name.includes(filter) || studentId.includes(filter)) ? "" : "none";
-  });
-});
-</script>
-
 </body>
 </html>

@@ -16,13 +16,22 @@ class Faculty(models.Model):
 
 
 from django.db import models
+from django.contrib.auth.models import User
 
 class Problem(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     total_marks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)  # stores upload date automatically
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploaded_problems"
+    )
 
     def __str__(self):
-        return self.title
+        return f"{self.title} (Uploaded by: {self.created_by.get_full_name() if self.created_by else 'Admin'})"
+
 

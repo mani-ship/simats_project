@@ -5,122 +5,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard</title>
+
+  <!-- favicon -->
+  <link rel="shortcut icon" href="/static/adminui/favicon.ico" type="image/x-icon" />
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="{% static 'adminui/css/header.css' %}">
+
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding-top: 100px;
-      background: #f4f6f9;
-    }
+    body { font-family: 'Poppins', sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
     body::before {
       content: "";
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url("/static/adminui/logo1.png") no-repeat center center/cover;
-      opacity: 0.4;
+      inset: 0;
+      background: url("{% static 'adminui/watermarklogo.jpeg' %}") no-repeat center center/contain;
+      opacity: 0.5;
       z-index: -1;
-      filter: blur(10px);
     }
-    .fixed-tab {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
-      background: #fff;
-      padding: 10px 25px;
-      border-radius: 50px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    
+    /* ✅ Reduced width for tab navigation */
+    .fixed-tab { 
+      top: 100px; 
+      z-index: 1020; 
+      background: #fff; 
+      padding: 10px 20px; 
+      border-radius: 50px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+      margin-bottom: 55px; 
+      max-width: 500px;   /* reduced width */
+      margin-left: auto; 
+      margin-right: auto; 
     }
-    .nav-pills .nav-link {
-      border-radius: 30px;
-      padding: 8px 22px;
-      font-weight: 600;
-      transition: 0.3s;
-    }
-    .nav-pills .nav-link.active {
-      background: linear-gradient(135deg,#0d6efd,#6610f2);
-      color: #fff;
-    }
-    .problem-text {
-      background: #f9f9f9;
-      border-radius: 10px;
-      padding: 15px;
-      font-size: 14px;
-      line-height: 1.5;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #eaeaea;
-    }
-    .result-card {
-      border-radius: 15px;
-      border: none;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      transition: 0.3s;
-    }
-    .result-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    .marks-box {
-      background: #f1f5ff;
-      border-radius: 10px;
-      padding: 10px 15px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    .remarks-box {
-      background: #fff;
-      border: 1px solid #eee;
-      border-left: 4px solid #0d6efd;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    .pagination {
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .page-item .page-link {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 5px;
-      padding: 0;
-    }
+
+    .logout{
+    position: absolute;
+    top: 115px;
+    right: 33px;
+}
+    
+
+    .fixed-tab { top: 100px; z-index: 1020; background: #fff; padding: 10px 25px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 55px; }
+    .nav-pills .nav-link { border-radius: 30px; padding: 8px 22px; font-weight: 600; transition: 0.3s; }
+    .nav-pills .nav-link.active { background: linear-gradient(135deg,#0d6efd); color: #fff; }
+    .problem-text { background: #f9f9f9; border-radius: 10px; padding: 15px; font-size: 14px; line-height: 1.5; max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; }
+    .result-card { border-radius: 15px; border: none; box-shadow: 0 6px 18px rgba(0,0,0,0.08); transition: 0.3s; }
+    .result-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .marks-box { background: #f1f5ff; border-radius: 10px; padding: 10px 15px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+    .remarks-box { background: #fff; border: 1px solid #eee; border-left: 4px solid #0d6efd; border-radius: 10px; padding: 12px; margin-top: 10px; font-size: 14px; }
+    .pagination { justify-content: center; margin-top: 20px; }
+    .page-item .page-link { border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 5px; padding: 0; }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light position-relative">
+    <div class="container d-flex justify-content-center">
+      <div class="d-flex align-items-center" style="gap:20px">
+        <a class="navbar-brand" href="#"><img src="{% static 'adminui/logo1.png' %}" class="simats_logo" alt="SIMATS Logo"></a>
+        <div class="navbar-text fw-bold">SIMATS EXAMINATION</div>
+        <a class="navbar-brand" href="#"><img src="{% static 'adminui/sse_logo.webp' %}" class="sse_logo" alt="SSE Logo"></a>
+      </div>
+
+      <!-- Logout -->
+  
+        <a href="{% url 'logout' %}" class="logout btn btn-danger d-flex align-items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right me-2" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-3h-1v3H3V2h7v3h1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h7z"/>
+            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H6.5a.5.5 0 0 0 0 1h7.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+          </svg>
+          Logout
+        </a>
+      
+    </div>
+  </nav>
+
   <div class="container">
 
-    <!-- Fixed Tab Bar -->
-    <div class="fixed-tab">
-      <ul class="nav nav-pills" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="problem-tab" data-bs-toggle="pill" data-bs-target="#problem" type="button" role="tab">
-            🚀 Problem Statement
-          </button>
+    <!-- Tab Navigation -->
+    <div class="fixed-tab mt-3">
+      <ul class="nav nav-pills justify-content-center" id="myTab" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" id="problem-tab" data-bs-toggle="pill" data-bs-target="#problem">Problem Statement</button>
         </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="result-tab" data-bs-toggle="pill" data-bs-target="#result" type="button" role="tab">
-            📊 View Results
-          </button>
+        <li class="nav-item">
+          <button class="nav-link" id="result-tab" data-bs-toggle="pill" data-bs-target="#result">View Results</button>
         </li>
       </ul>
     </div>
+
+    <!-- Show messages -->
+    {% if error_message %}
+      <div class="alert alert-danger text-center mt-4">{{ error_message }}</div>
+    {% endif %}
+    {% if success_message %}
+      <div class="alert alert-success text-center mt-4">{{ success_message }}</div>
+    {% endif %}
 
     <!-- Tab Content -->
     <div class="tab-content mt-4">
@@ -130,11 +113,10 @@
         {% if next_problem %}
         <div class="card shadow-lg border-0 mb-4">
           <div class="card-body p-4">
-            <h5 class="card-title mb-3">{{ next_problem.title }}</h5>
+            <h5 class="card-title mb-3 text-capitalize">{{ next_problem.title }}</h5>
             <span class="badge bg-danger mb-2">Problem Statement</span>
-            <div class="problem-text mb-3">
-              {{ next_problem.description|linebreaks }}
-            </div>
+            <div class="problem-text mb-3">{{ next_problem.description|linebreaks }}</div>
+            
             <form method="post" enctype="multipart/form-data" action="{% url 'submit_solution' next_problem.id %}">
               {% csrf_token %}
               <div class="mb-3">
@@ -146,9 +128,7 @@
           </div>
         </div>
         {% else %}
-        <div class="alert alert-info text-center">
-          🎉 No available problems right now. Please wait for admin to upload new ones.
-        </div>
+        <div class="alert alert-info text-center">🎉 No available problems right now. Please wait for admin to upload new ones.</div>
         {% endif %}
       </div>
 
@@ -160,49 +140,22 @@
           {% for submission in page_obj %}
           <div class="card result-card mb-4">
             <div class="card-body p-4">
-              
-              <!-- Problem Title -->
-              <h5 class="fw-bold mb-2 text-dark">{{ submission.problem.title }}</h5>
-              <div class="problem-text mb-3">
-                {{ submission.problem.description|linebreaks }}
-              </div>
+              <h5 class="fw-bold mb-2 text-dark text-capitalize">{{ submission.problem.title }}</h5>
+              <div class="problem-text mb-3">{{ submission.problem.description|linebreaks }}</div>
+              <p class="mb-1 text-muted" style="font-size: 0.9rem;">Submitted At: {{ submission.submitted_at }}</p>
+              <p><strong>File:</strong> <a href="{{ submission.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">View File</a></p>
 
-              <!-- Submission Info -->
-              <p class="mb-1 text-muted" style="font-size: 0.9rem;">
-                Submitted At: {{ submission.submitted_at }}
-              </p>
-              <p>
-                <strong>File:</strong>
-                <a href="{{ submission.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">View File</a>
-              </p>
-
-              <!-- Marks Section -->
               <div class="row">
+                <div class="col-md-4"><div class="marks-box">🏆 Total Marks : {{ submission.problem.total_marks }}</div></div>
                 <div class="col-md-4">
-                  <div class="marks-box">
-                    🏆 Total Marks : {{ submission.problem.total_marks }}
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="marks-box">
-                    ✅ Faculty Marks: 
-                    {% if submission.faculty_marks %}
-                      {{ submission.faculty_marks }}
-                    {% else %}
-                      <span class="text-muted">Pending</span>
-                    {% endif %}
+                  <div class="marks-box">✅ Faculty Marks: 
+                    {% if submission.faculty_marks %} {{ submission.faculty_marks }} {% else %} <span class="text-muted">Pending</span> {% endif %}
                   </div>
                 </div>
               </div>
 
-              <!-- Remarks Section -->
-              <div class="remarks-box mt-3">
-                <strong>📌 Faculty Remarks:</strong><br>
-                {% if submission.faculty_remarks %}
-                  {{ submission.faculty_remarks }}
-                {% else %}
-                  <span class="text-muted">Not yet evaluated</span>
-                {% endif %}
+              <div class="remarks-box mt-3"><strong>📌 Faculty Remarks:</strong><br>
+                {% if submission.faculty_remarks %} {{ submission.faculty_remarks }} {% else %} <span class="text-muted">Not yet evaluated</span> {% endif %}
               </div>
 
             </div>
@@ -211,35 +164,25 @@
 
           <!-- Pagination -->
           <nav>
-            <ul class="pagination">
+            <ul class="pagination justify-content-center mt-3">
               {% if page_obj.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}&tab=result">«</a>
-                </li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&tab=result">«</a></li>
               {% endif %}
               {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                  <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                  </li>
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                 {% else %}
-                  <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}&tab=result">{{ num }}</a>
-                  </li>
+                  <li class="page-item"><a class="page-link" href="?page={{ num }}&tab=result">{{ num }}</a></li>
                 {% endif %}
               {% endfor %}
               {% if page_obj.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.next_page_number }}&tab=result">»</a>
-                </li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&tab=result">»</a></li>
               {% endif %}
             </ul>
           </nav>
 
         {% else %}
-          <div class="alert alert-info text-center">
-            📭 You don’t have any submissions yet.
-          </div>
+          <div class="alert alert-info text-center">📭 You don’t have any submissions yet.</div>
         {% endif %}
       </div>
 
@@ -248,16 +191,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- JS to remember active tab on reload -->
+  <!-- Preserve Active Tab -->
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    if(tab) {
+    if(tab){
       const triggerEl = document.querySelector(`#${tab}-tab`);
-      if(triggerEl) {
-        const tabInstance = new bootstrap.Tab(triggerEl);
-        tabInstance.show();
-      }
+      if(triggerEl) new bootstrap.Tab(triggerEl).show();
     }
   </script>
 </body>

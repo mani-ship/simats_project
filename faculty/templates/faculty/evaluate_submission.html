@@ -5,46 +5,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Evaluation</title>
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="{% static 'adminui/favicon.ico' %}" type="image/x-icon" />
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'adminui/css/header.css' %}">
+
   <style>
     body {
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
       margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: auto;
+      background: #f8f9fa;
     }
+
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: url("/static/adminui/logo1.png") no-repeat center center/cover;
-      filter: blur(7px);
-      opacity: 0.5;
+      background: url("{% static 'adminui/watermarklogo.jpeg' %}") no-repeat center center/contain;
+      opacity: 0.05;
       z-index: -1;
     }
+
     .evaluation-box {
+      margin: 2rem auto;
       background: #fff;
       border-radius: 16px;
       padding: 40px;
       max-width: 800px;
-      width: 100%;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-      transition: transform 0.2s ease-in-out;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
-    .evaluation-box:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-    }
+
     .evaluation-header {
       font-weight: 700;
       font-size: 1.4rem;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: #2c3e50;
     }
+
     .question-box {
       background: #f9fafb;
       border-left: 5px solid #007bff;
@@ -54,101 +55,135 @@
       font-size: 1rem;
       line-height: 1.6;
     }
+
     .marks-input {
       max-width: 150px;
       text-align: center;
       font-weight: 600;
     }
+
     .done-btn {
       border-radius: 10px;
       padding: 10px 25px;
       font-weight: 600;
       transition: all 0.3s ease;
     }
+
     .btn-primary.done-btn {
       background: linear-gradient(90deg, #007bff, #00c6ff);
       border: none;
     }
+
     .btn-primary.done-btn:hover {
       background: linear-gradient(90deg, #0056b3, #0096c7);
       transform: scale(1.05);
     }
+
     .btn-secondary.done-btn:hover {
       transform: scale(1.05);
     }
+
     .info-text {
       font-size: 0.95rem;
       color: #555;
       margin-bottom: 15px;
     }
+
     .file-link {
       font-weight: 600;
       color: #007bff;
       text-decoration: none;
     }
+
     .file-link:hover {
       text-decoration: underline;
       color: #0056b3;
+    }
+
+    .alert {
+      font-size: 0.95rem;
     }
   </style>
 </head>
 <body>
 
-<div class="evaluation-box">
-  <h2 class="mb-4 text-center">📑 Faculty Evaluation</h2>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container d-flex justify-content-center">
+    <div class="d-flex align-items-center" style="gap:20px">
+      <a class="navbar-brand" href="#">
+        <img src="{% static 'adminui/logo1.png' %}" class="simats_logo" alt="SIMATS Logo">
+      </a>
+      <div class="navbar-text fw-bold">SIMATS EXAMINATION</div>
+      <a class="navbar-brand" href="#">
+        <img src="{% static 'adminui/sse_logo.webp' %}" class="sse_logo" alt="SSE Logo">
+      </a>
+    </div>
+  </div>
+</nav>
 
-  <!-- Error Message -->
+<div class="container mt-3">
   {% if error_message %}
-    <div class="alert alert-danger mb-3" role="alert">
-      {{ error_message }}
-    </div>
+    <div class="alert alert-danger text-center">{{ error_message }}</div>
   {% endif %}
-
-  <!-- Student Info -->
-  <div class="info-text">
-    <strong>👤 Student:</strong> {{ submission.student.full_name }} (ID: {{ submission.student.student_id }})<br>
-    <strong>📂 Submitted File:</strong> 
-    <a href="{{ submission.file.url }}" target="_blank" class="file-link">View File</a>
-  </div>
-
-  <!-- Problem -->
-  <div class="evaluation-header">{{ submission.problem.title }}</div>
-  <div class="question-box">
-    {{ submission.problem.description|linebreaks }}
-    <br><br>
-    <strong>Total Marks Assigned by Admin:</strong> {{ submission.problem.total_marks }}
-  </div>
-
-  <!-- Evaluation Form -->
-  <form method="post">
-    {% csrf_token %}
-    <div class="row mb-4">
-      <div class="col-6 col-md-3">
-        <label class="form-label">Marks</label>
-        <input type="number" name="marks" class="form-control marks-input"
-               value="{{ submission.faculty_marks|default:'' }}" required>
-      </div>
-      <div class="col-6 col-md-3">
-        <label class="form-label">Total Marks</label>
-        <input type="number" class="form-control marks-input"
-               value="{{ submission.problem.total_marks }}" disabled>
-      </div>
-    </div>
-
-    <div class="mb-4">
-      <label class="form-label">Remarks</label>
-      <textarea name="remarks" class="form-control" rows="4"
-                placeholder="Write your feedback here...">{{ submission.faculty_remarks|default:'' }}</textarea>
-    </div>
-
-    <!-- Buttons -->
-    <div class="d-flex justify-content-between">
-      <a href="{% url 'faculty_dashboard' %}" class="btn btn-secondary done-btn">⬅ Back</a>
-      <button type="submit" class="btn btn-primary done-btn">✅ Save & Done</button>
-    </div>
-  </form>
 </div>
 
+<div class="container">
+  <div class="evaluation-box">
+    <h2 class="mb-4 text-center">📑 Faculty Evaluation</h2>
+
+    <!-- Student Info -->
+    <div class="info-text mb-3">
+      <strong>👤 Student:</strong> {{ submission.student.full_name }} (ID: {{ submission.student.student_id }})<br>
+      <strong>📂 Submitted File:</strong>
+      <a href="{{ submission.file.url }}" target="_blank" class="file-link">View File</a><br>
+      <strong>🧑‍🏫 Faculty Evaluator:</strong>
+      {% if submission.faculty %}
+        {{ submission.faculty.get_full_name|default:submission.faculty.username }}
+      {% else %}
+        Not Evaluated Yet
+      {% endif %}
+    </div>
+
+    <!-- Problem Info -->
+    <div class="evaluation-header">{{ submission.problem.title }}</div>
+    <div class="question-box">
+      {{ submission.problem.description|linebreaks }}
+      <br><br>
+      <strong>Total Marks Assigned by Admin:</strong> {{ submission.problem.total_marks }}
+    </div>
+
+    <!-- Evaluation Form -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="row mb-4">
+        <div class="col-6 col-md-3">
+          <label class="form-label">Marks</label>
+          <input type="number" name="marks" class="form-control marks-input"
+                 value="{{ submission.faculty_marks|default:'' }}" required>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label">Total Marks</label>
+          <input type="number" class="form-control marks-input"
+                 value="{{ submission.problem.total_marks }}" disabled>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Remarks</label>
+        <textarea name="remarks" class="form-control" rows="4"
+                  placeholder="Write your feedback here..." required>{{ submission.faculty_remarks|default:'' }}</textarea>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'faculty_dashboard' %}" class="btn btn-secondary done-btn">Back</a>
+        <button type="submit" class="btn btn-primary done-btn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -140,3 +140,5 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+USE_TZ = True
+TIME_ZONE = "Asia/Kolkata"
