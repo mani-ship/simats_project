@@ -1,5 +1,3 @@
-# adminui/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -8,69 +6,74 @@ from django.contrib.auth.decorators import login_required
 from student.models import Student, Submission
 from adminui.models import Problem, Faculty
 from datetime import datetime
-
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.hashers import make_password
 
 # ----- Admin Access Decorator -----
 def admin_required(view_func):
-    """Decorator to allow only logged-in staff users."""
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            messages.error(request, "Please login first!")
             return redirect("login_options")
         if not request.user.is_staff:
-            messages.error(request, "You are not authorized to access this page!")
             return redirect("login_options")
         return view_func(request, *args, **kwargs)
     return wrapper
 
-
-# ----- Login Views -----
+# ----- Login Options Page -----
 def login_options(request):
     return render(request, "adminui/login_options.html")
 
-
+# ----- Admin Login -----
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.views.decorators.cache import never_cache
 
+# ----- Admin Login -----
+@never_cache
 def login_view(request):
-    # Clear previous messages so login page is clean
     storage = messages.get_messages(request)
     for _ in storage:
-        pass  # This iterates and clears old messages
+        pass  # Clear old messages
 
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-
         user = authenticate(request, username=username, password=password)
-
-        if user is not None and user.is_staff:   # only staff/superuser
+        if user and user.is_staff:
             login(request, user)
             return redirect("dashboard")
         else:
             messages.error(request, "Invalid credentials or not an admin user")
 
-    return render(request, "adminui/login.html")
+    response = render(request, "adminui/login.html")
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
-
-
-@admin_required
+# ----- Admin Logout -----
+@never_cache
 def logout_view(request):
     logout(request)
-    
     return redirect("login_options")
 
-
 # ----- Dashboard -----
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.views.decorators.cache import never_cache
+from .decorators import admin_required
+from student.models import Student, Submission
+from adminui.models import Faculty, Problem
+
 @admin_required
+@never_cache
 def dashboard(request):
     student_count = Student.objects.count()
     faculty_count = Faculty.objects.count()
     problem_count = Problem.objects.count()
 
-    # Get all submissions with related student, faculty, problem (sorted latest first)
     submissions = Submission.objects.select_related("student", "faculty", "problem").order_by("-submitted_at")
-
-    # Pagination
     paginator = Paginator(submissions, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -81,14 +84,20 @@ def dashboard(request):
         "problem_count": problem_count,
         "page_obj": page_obj,
     }
-    return render(request, "adminui/dashboard.html", context)
+
+    response = render(request, "adminui/dashboard.html", context)
+    # Add no-cache headers
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 # ----- Student List -----
 @admin_required
+@never_cache
 def student_list(request):
     query = request.GET.get("q", "")
-
     if query:
         students = Student.objects.filter(full_name__icontains=query) | Student.objects.filter(student_id__icontains=query)
     else:
@@ -103,9 +112,9 @@ def student_list(request):
         "query": query
     })
 
-
-# ----- Change Student Password -----
+# ----- Student Change Password -----
 @admin_required
+@never_cache
 def student_change_password(request, student_id):
     student = get_object_or_404(Student, id=student_id)
 
@@ -122,22 +131,12 @@ def student_change_password(request, student_id):
 
     return redirect("student_list")
 
-
 # ----- Faculty CRUD -----
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.core.paginator import Paginator
-from django.contrib.auth.hashers import make_password
-from .models import Faculty
-from .decorators import admin_required
-
-
 @admin_required
+@never_cache
 def faculty_list(request):
-    """List all faculties with optional search and pagination."""
     search_query = request.GET.get("search", "")
     faculties = Faculty.objects.all()
-
     if search_query:
         faculties = faculties.filter(faculty_id__icontains=search_query)
 
@@ -151,10 +150,9 @@ def faculty_list(request):
     }
     return render(request, "adminui/faculty_list.html", context)
 
-
 @admin_required
+@never_cache
 def add_faculty(request):
-    """Add a new faculty member with username, password, and other info."""
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -162,21 +160,15 @@ def add_faculty(request):
         gender = request.POST.get("gender")
         department = request.POST.get("department")
 
-        # Validate required fields
         if not all([username, password, faculty_id, gender, department]):
             messages.error(request, "All fields are required.")
             return redirect("faculty_list")
 
-        # Check uniqueness
-        if Faculty.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-            return redirect("faculty_list")
-
+        # Only check faculty_id uniqueness
         if Faculty.objects.filter(faculty_id=faculty_id).exists():
             messages.error(request, "Faculty ID already exists.")
             return redirect("faculty_list")
 
-        # Create new faculty with hashed password
         Faculty.objects.create(
             username=username,
             password=make_password(password),
@@ -192,34 +184,28 @@ def add_faculty(request):
 
 
 @admin_required
+@never_cache
 def edit_faculty(request, pk):
-    """Edit an existing faculty member's details; password is optional."""
     faculty = get_object_or_404(Faculty, pk=pk)
-
     if request.method == "POST":
         username = request.POST.get("username")
-        password = request.POST.get("password")  # optional
+        password = request.POST.get("password")
         faculty_id = request.POST.get("faculty_id")
         gender = request.POST.get("gender")
         department = request.POST.get("department")
 
-        # Check uniqueness
-        if Faculty.objects.filter(username=username).exclude(pk=pk).exists():
-            messages.error(request, "Username already exists.")
-            return redirect("faculty_list")
-
+        # ✅ Only check faculty_id uniqueness
         if Faculty.objects.filter(faculty_id=faculty_id).exclude(pk=pk).exists():
             messages.error(request, "Faculty ID already exists.")
             return redirect("faculty_list")
 
-        # Update fields
         faculty.username = username
         faculty.faculty_id = faculty_id
         faculty.gender = gender
         faculty.department = department
 
         if password:
-            faculty.password = make_password(password)  # update password only if provided
+            faculty.password = make_password(password)
 
         faculty.save()
         messages.success(request, "Faculty updated successfully.")
@@ -228,18 +214,17 @@ def edit_faculty(request, pk):
     return redirect("faculty_list")
 
 
-
-
 @admin_required
+@never_cache
 def delete_faculty(request, pk):
     faculty = get_object_or_404(Faculty, pk=pk)
     faculty.delete()
     messages.success(request, "Faculty deleted successfully.")
     return redirect("faculty_list")
 
-
 # ----- Problem CRUD -----
 @admin_required
+@never_cache
 def problem_upload(request):
     if request.method == "POST":
         title = request.POST.get("title")
@@ -250,11 +235,7 @@ def problem_upload(request):
             messages.error(request, "All fields are required!")
             return redirect('problem_upload')
 
-        Problem.objects.create(
-            title=title,
-            description=description,
-            total_marks=total_marks
-        )
+        Problem.objects.create(title=title, description=description, total_marks=total_marks)
         messages.success(request, "Problem uploaded successfully!")
         return redirect('problem_upload')
 
@@ -276,14 +257,9 @@ def problem_upload(request):
     }
     return render(request, "adminui/problem_upload.html", context)
 
-
-from .decorators import admin_required
-
 @admin_required
+@never_cache
 def delete_problem(request, pk):
-    from .models import Problem
-    from django.shortcuts import get_object_or_404, redirect
-
     problem = get_object_or_404(Problem, pk=pk)
     problem.delete()
     return redirect('problem_upload')

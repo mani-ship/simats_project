@@ -5,16 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Login</title>
-   <!-- favicon -->
-    <link rel="shortcut icon" href="/static/adminui/favicon.ico" type="image/x-icon" />
-   <!-- Bootstrap CSS -->
+  <link rel="shortcut icon" href="{% static 'adminui/favicon.ico' %}" type="image/x-icon" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-  <!-- External CSS -->
   <link rel="stylesheet" href="{% static 'adminui/css/header.css' %}">
   <style>
-  
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
@@ -23,13 +18,11 @@
       flex-direction: column;
       background: #fdfdfd;
     }
-    /* Background only for content area */
     .background-blur {
       flex: 1;
       position: relative;
       width: 100%;
     }
-
     .background-blur::before {
       content: "";
       position: absolute;
@@ -38,41 +31,29 @@
       width: 100%;
       height: 100%;
       background: url("{% static 'adminui/watermarklogo.jpeg' %}") no-repeat center center/contain;
-      opacity: 0.60;  /* light watermark effect */
+      opacity: 0.60;
       z-index: -1;
     }
   </style>
 </head>
 <body>
-    <!-- Header -->
- <nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container d-flex justify-content-center">
     <div class="d-flex align-items-center" style="gap:20px">
-      <a class="navbar-brand" href="#">
-        <img src="{% static 'adminui/logo1.png' %}" class="simats_logo" alt="SIMATS Logo">
-      </a>
-
+      <a class="navbar-brand" href="#"><img src="{% static 'adminui/logo1.png' %}" class="simats_logo" alt="SIMATS Logo"></a>
       <div class="navbar-text fw-bold">SIMATS EXAMINATION</div>
-
-      <a class="navbar-brand" href="#">
-        <img src="{% static 'adminui/sse_logo.webp' %}" class="sse_logo" alt="SSE Logo">
-      </a>
+      <a class="navbar-brand" href="#"><img src="{% static 'adminui/sse_logo.webp' %}" class="sse_logo" alt="SSE Logo"></a>
     </div>
   </div>
 </nav>
 
-
-
-
-  <!-- Content with background image -->
-  <div class="background-blur d-flex flex-column align-items-center justify-content-center">
-
+<div class="background-blur d-flex flex-column align-items-center justify-content-center">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-4 col-md-6 col-sm-10">
         <div class="card shadow-lg rounded-4 p-4">
           <div class="text-center mb-3">
-            <img src="/static/adminui/logo1.png" alt="Logo" class="img-fluid" style="max-width:70px;">
+            <img src="{% static 'adminui/logo1.png' %}" alt="Logo" class="img-fluid" style="max-width:70px;">
           </div>
 
           <h2 class="h4 fw-semibold text-center">Faculty Login</h2>
@@ -86,18 +67,23 @@
               <label for="password" class="form-label">Password</label>
               <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required>
             </div>
-            {% if messages %}
-              <div class="alert alert-danger mt-2">
-                {% for msg in messages %}
-                  {{ msg }}
-                {% endfor %}
-              </div>
-            {% endif %}
+
+            <!-- Show only faculty messages -->
+           {% if messages %}
+  {% for msg in messages %}
+    {% if 'faculty' in msg.tags %}
+      <div class="alert alert-danger mt-2">{{ msg }}</div>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+
             <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
           </form>
         </div>
       </div>
     </div>
   </div>
+</div>
 </body>
 </html>

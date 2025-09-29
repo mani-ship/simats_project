@@ -5,13 +5,12 @@ from django.core.paginator import Paginator
 from .models import Student, Submission
 from adminui.models import Problem
 from student.decorato import student_login_required
+from django.views.decorators.cache import never_cache
+
 
 # ----- Registration & Login -----
+@never_cache
 def register_login(request):
-    # If already logged in, redirect to dashboard
-    if request.session.get("student_id"):
-        return redirect("student_dashboard")
-
     if request.method == "POST":
         form_type = request.POST.get("form_type")
         if form_type == "register":
@@ -24,7 +23,7 @@ def register_login(request):
             department = request.POST.get("department")
 
             if Student.objects.filter(student_id=student_id).exists():
-                messages.error(request, "Student ID already registered.")
+                messages.error(request, "Student ID already registered.", extra_tags='student')
             else:
                 Student.objects.create(
                     full_name=full_name,
@@ -35,7 +34,7 @@ def register_login(request):
                     semester=semester,
                     department=department
                 )
-                messages.success(request, "Registration successful! Please login.")
+                messages.success(request, "Registration successful! Please login.", extra_tags='student')
 
         elif form_type == "login":
             student_id = request.POST.get("student_id")
@@ -43,19 +42,26 @@ def register_login(request):
             try:
                 student = Student.objects.get(student_id=student_id)
                 if check_password(password, student.password):
+                    # Set session AFTER successful login only
                     request.session["student_id"] = student.id
                     request.session["student_name"] = student.full_name
                     return redirect("student_dashboard")
                 else:
-                    messages.error(request, "Incorrect password.")
+                    messages.error(request, "Incorrect password.", extra_tags='student')
             except Student.DoesNotExist:
-                messages.error(request, "Invalid Student ID.")
+                messages.error(request, "Invalid Student ID.", extra_tags='student')
 
-    return render(request, "student/register_login.html")
+    # Render with no caching
+    response = render(request, "student/register_login.html")
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 # ----- Student Dashboard -----
 @student_login_required
+@never_cache
 def student_dashboard(request):
     student_id = request.session.get("student_id")
     student = get_object_or_404(Student, id=student_id)
@@ -68,22 +74,20 @@ def student_dashboard(request):
     submitted_problem_ids = submissions_list.values_list("problem_id", flat=True)
     next_problem = Problem.objects.exclude(id__in=submitted_problem_ids).order_by("created_at").first()
 
-    return render(request, "student/student_dashboard.html", {
+    response = render(request, "student/student_dashboard.html", {
         "student": student,
         "next_problem": next_problem,
         "page_obj": page_obj,
     })
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 # ----- Submit Solution -----
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from student.models import Submission, Student
-from adminui.models import Problem
-from django.core.paginator import Paginator
-from .decorato import student_login_required
-
 @student_login_required
+@never_cache
 def submit_solution(request, problem_id):
     student_id = request.session.get("student_id")
     student = get_object_or_404(Student, id=student_id)
@@ -102,26 +106,33 @@ def submit_solution(request, problem_id):
             Submission.objects.create(problem=problem, student=student, file=file)
             success_message = "Solution submitted successfully!"
 
-    # Fetch next problem (example logic)
     next_problem = Problem.objects.exclude(submissions__student=student).first()
-
-    # Fetch student's submissions
     submissions = Submission.objects.filter(student=student).order_by("-submitted_at")
     paginator = Paginator(submissions, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "student/student_dashboard.html", {
+    response = render(request, "student/student_dashboard.html", {
         "next_problem": next_problem,
         "page_obj": page_obj,
         "error_message": error_message,
         "success_message": success_message,
     })
-
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 # ----- Logout -----
 @student_login_required
+@never_cache
 def student_logout(request):
-    request.session.flush()  # clear all session data
-    return redirect("student_auth")
+    # Clear session completely
+    request.session.flush()
+
+    # Clear leftover messages
+    list(messages.get_messages(request))
+
+    # Redirect to user selection page
+    return redirect("login_options")

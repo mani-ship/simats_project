@@ -1,17 +1,19 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from adminui.models import Faculty
-from student.models import Problem, Submission  # import student models
-
-
-
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
-from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+from django.views.decorators.cache import never_cache
 from adminui.models import Faculty
+from student.models import Submission
+from student.models import Problem
+from faculty.decorator import faculty_login_required
+from django.db.models import Q
 
+# ----- Faculty Login -----
+@never_cache
 def faculty_login(request):
-    # If already logged in → go to dashboard
+    list(messages.get_messages(request))
+
     if request.session.get('faculty_id'):
         return redirect('faculty_dashboard')
 
@@ -20,42 +22,36 @@ def faculty_login(request):
         password_input = request.POST.get('password', '').strip()
 
         if not faculty_id_input or not password_input:
-            messages.error(request, "Please enter Faculty ID and Password.")
+            messages.error(request, "Please enter Faculty ID and Password.", extra_tags='faculty')
             return render(request, "faculty/login.html")
 
         try:
             faculty = Faculty.objects.get(faculty_id=faculty_id_input)
-            if check_password(password_input, faculty.password):  # ✅ hashed password check
+            if check_password(password_input, faculty.password):
                 request.session['faculty_id'] = faculty.faculty_id
                 request.session['faculty_username'] = faculty.username
                 return redirect('faculty_dashboard')
             else:
-                messages.error(request, "Incorrect password.")
+                messages.error(request, "Incorrect password.", extra_tags='faculty')
         except Faculty.DoesNotExist:
-            messages.error(request, "Faculty ID does not exist.")
+            messages.error(request, "Faculty ID does not exist.", extra_tags='faculty')
 
-    return render(request, "faculty/login.html")
+    response = render(request, "faculty/login.html")
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
-
-
-
-from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
-from django.db.models import Q
-from .decorators import faculty_login_required
-from student.models import Submission
-
-from django.db.models import Q
-
+# ----- Faculty Dashboard -----
 @faculty_login_required
+@never_cache
 def faculty_dashboard(request):
     faculty_username = request.session.get('faculty_username')
     if not faculty_username:
         return redirect('faculty_login')
 
     submissions_list = Submission.objects.select_related("student", "problem").order_by("-submitted_at")
-
     search_query = request.GET.get("search", "").strip()
     if search_query:
         submissions_list = submissions_list.filter(
@@ -67,42 +63,24 @@ def faculty_dashboard(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "faculty/dashboard.html", {
+    response = render(request, "faculty/dashboard.html", {
         "faculty_username": faculty_username,
         "page_obj": page_obj,
-        "search": search_query,  # pass to template
+        "search": search_query,
     })
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
-
-
-
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from student.models import Submission
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from student.models import Submission
-from .decorators import faculty_login_required
-
-from django.shortcuts import render, redirect, get_object_or_404
-from student.models import Submission
-from .decorators import faculty_login_required
-from adminui.models import Faculty  # import your Faculty model
-
+# ----- Evaluate Submission -----
 @faculty_login_required
+@never_cache
 def evaluate_submission(request, submission_id):
-    """
-    Allows a logged-in faculty to evaluate a student's submission.
-    Marks and remarks are saved, and the submission is linked to the faculty.
-    """
     submission = get_object_or_404(Submission, id=submission_id)
     error_message = ""
 
-    # Get the logged-in faculty from session
     faculty_id = request.session.get("faculty_id")
     try:
         faculty = Faculty.objects.get(faculty_id=faculty_id)
@@ -113,7 +91,6 @@ def evaluate_submission(request, submission_id):
     if request.method == "POST":
         marks_input = request.POST.get("marks")
         remarks = request.POST.get("remarks", "").strip()
-
         try:
             marks = int(marks_input)
             if marks < 0:
@@ -123,30 +100,26 @@ def evaluate_submission(request, submission_id):
             else:
                 submission.faculty_marks = marks
                 submission.faculty_remarks = remarks
-
-                # Assign the logged-in Faculty object
                 submission.faculty = faculty
                 submission.save()
-
                 return redirect("faculty_dashboard")
-
         except (ValueError, TypeError):
             error_message = "Please enter a valid number for marks."
 
-    return render(request, "faculty/evaluate_submission.html", {
+    response = render(request, "faculty/evaluate_submission.html", {
         "submission": submission,
         "error_message": error_message
     })
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
-
-
-
-
-
-
-
-
+# ----- Faculty Logout -----
+@faculty_login_required
+@never_cache
 def faculty_logout(request):
-    request.session.flush()  # clear session
-    return redirect('login_options')
+    request.session.flush()
+    list(messages.get_messages(request))
+    return redirect("login_options")

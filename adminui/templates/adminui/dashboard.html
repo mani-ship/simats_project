@@ -120,6 +120,7 @@
             <th>Student Name</th>
             <th>Student ID</th>
             <th>Problem Title</th>
+            <th>Uploaded By</th>
             <th>Submission Date</th>
             <th>Evaluated By</th>
             <th>Marks</th>
@@ -132,6 +133,13 @@
             <td>{{ submission.student.full_name }}</td>
             <td>{{ submission.student.student_id }}</td>
             <td>{{ submission.problem.title }}</td>
+            <td>
+              {% if submission.problem.created_by %}
+                {{ submission.problem.created_by.username }}
+              {% else %}
+                Admin
+              {% endif %}
+            </td>
             <td>{{ submission.submitted_at|date:"Y-m-d H:i" }}</td>
             <td>
               {% if submission.faculty %}
@@ -150,7 +158,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="7" class="text-center">No submissions yet</td>
+            <td colspan="8" class="text-center">No submissions yet</td>
           </tr>
           {% endfor %}
         </tbody>

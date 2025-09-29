@@ -1,7 +1,7 @@
 from django.db import models
 
 class Faculty(models.Model):
-    username = models.CharField(max_length=100, unique=True)
+    username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)   # (later we can use hashing)
     faculty_id = models.CharField(max_length=50, unique=True)
     gender = models.CharField(max_length=10, choices=[
