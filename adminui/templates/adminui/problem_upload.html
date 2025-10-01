@@ -82,7 +82,6 @@
       margin-left: 300px;
       display: flex;
       flex-direction: column;
-      {% comment %} padding: 20px; {% endcomment %}
     }
 
     /* Trendy Pagination */
@@ -182,6 +181,14 @@
         <button type="submit" class="filter-btn"><i class="bi bi-funnel-fill"></i> Filter</button>
         <a href="{% url 'problem_upload' %}" class="filter-btn reset-btn"><i class="bi bi-x-circle-fill"></i> Reset</a>
       </form>
+
+      {% if selected_date %}
+        <div class="mt-2">
+          <span class="badge bg-info text-dark">
+            Showing results for: {{ selected_date }}
+          </span>
+        </div>
+      {% endif %}
     </div>
 
     <h5 class="mb-3">Uploaded Problems</h5>

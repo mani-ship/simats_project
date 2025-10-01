@@ -223,6 +223,16 @@ def delete_faculty(request, pk):
     return redirect("faculty_list")
 
 # ----- Problem CRUD -----
+
+
+from datetime import datetime, timedelta
+from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from .models import Problem
+from .decorators import admin_required
+
 @admin_required
 @never_cache
 def problem_upload(request):
@@ -235,7 +245,12 @@ def problem_upload(request):
             messages.error(request, "All fields are required!")
             return redirect('problem_upload')
 
-        Problem.objects.create(title=title, description=description, total_marks=total_marks)
+        Problem.objects.create(
+            title=title,
+            description=description,
+            total_marks=total_marks,
+            created_by=request.user  # optional: store the uploader
+        )
         messages.success(request, "Problem uploaded successfully!")
         return redirect('problem_upload')
 
@@ -243,7 +258,14 @@ def problem_upload(request):
     selected_date = request.GET.get('date', '')
 
     if selected_date:
-        problems = problems.filter(created_at__date=selected_date)
+        try:
+            date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            start = datetime.combine(date_obj, datetime.min.time())
+            end = start + timedelta(days=1)
+            problems = problems.filter(created_at__gte=start, created_at__lt=end)
+        except ValueError:
+            messages.warning(request, "Invalid date format.")
+            selected_date = ""
 
     paginator = Paginator(problems, 5)
     page_number = request.GET.get('page')
@@ -251,11 +273,12 @@ def problem_upload(request):
 
     context = {
         'problems': page_obj,
-        'today': datetime.today().strftime('%d.%m.%Y'),
+        'today': datetime.today().strftime('%Y-%m-%d'),  # matches <input type="date">
         'now_time': datetime.now().strftime('%I:%M %p'),
         'selected_date': selected_date
     }
     return render(request, "adminui/problem_upload.html", context)
+
 
 @admin_required
 @never_cache
