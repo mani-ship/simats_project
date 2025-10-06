@@ -11,51 +11,142 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
   <style>
+    /* General */
     body {
       font-family: "Poppins", sans-serif;
       min-height: 100vh;
       margin: 0;
       overflow-x: hidden;
+      background: #f4f6f9;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      filter: blur(7px);
-      opacity: 0.5;
-      z-index: -1;
-    }
+
+    /* Sidebar */
     .sidebar {
-      background: #fff;
+      background: #ffffff;
       border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      padding: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      padding: 25px 20px;
       width: 280px;
       height: 100vh;
       position: fixed;
       top: 0;
       left: 0;
       overflow-y: auto;
+      transition: all 0.3s ease;
     }
-    .sidebar a { display: block; padding: 8px 12px; color: #000; text-decoration: none; border-radius: 6px; }
-    .sidebar a:hover, .sidebar .active { background: #e9f0ff; color: #0d6efd; }
+    .sidebar a {
+      display: block;
+      padding: 10px 15px;
+      color: #333;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      transition: 0.3s ease;
+    }
+    .sidebar a:hover, .sidebar .active {
+      background: #007bff;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    }
+    .sidebar h6 {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: #007bff;
+      text-transform: uppercase;
+    }
+
+    /* Content Box */
     .content-box {
-      background: #fff;
+      background: #f4f6f9;
       border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      min-height: 100vh;
+      padding: 25px;
       margin-left: 300px;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: all 0.3s ease;
     }
-    .stat-card { border-radius: 12px; padding: 20px; color: black; font-weight: bold; background: linear-gradient(135deg, #cfc8c8, #f9f9f9); }
-    .stat-card i { font-size: 2rem; margin-bottom: 10px; }
-    .table-container { flex-grow: 1; overflow-y: auto; max-height: 60vh; }
-    .table thead th { position: sticky; top: 0; background: #f8f9fa; z-index: 2; }
-    .pagination .page-link { margin: 0 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: all 0.3s ease; }
-    .pagination .page-link:hover { background-color: #a3a7aaff; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(13,110,253,0.3); }
-    .pagination .active .page-link { background: linear-gradient(135deg, #0d6efd, #6610f2); color: #fff !important; box-shadow: 0 4px 15px rgba(13,110,253,0.4); }
+
+    /* Welcome Box */
+    .welcome-box {
+      animation: fadeInUp 1s ease-in-out;
+      background: linear-gradient(135deg, #016bddff, #00c6ff);
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+      border-radius: 15px;
+      padding: 25px;
+      color: #fff;
+      font-weight: bold;
+      background: linear-gradient(135deg, #016bddff, #00c6ff);
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .stat-card i {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* Table */
+    .table-container {
+      flex-grow: 1;
+      overflow-y: auto;
+      max-height: 60vh;
+      margin-top: 20px;
+    }
+    .table thead th {
+      position: sticky;
+      top: 0;
+      background: #e9ecef;
+      z-index: 2;
+    }
+    .table tbody tr:hover {
+      background-color: #f1f3f6;
+      transition: 0.3s ease;
+    }
+
+    /* Pagination */
+    .pagination .page-link {
+      margin: 0 5px;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 50%;
+    }
+    .pagination .page-link:hover {
+      background-color: #007bff;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+    }
+    .pagination .active .page-link {
+      background: #007bff;
+      color: #fff !important;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.4);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -67,11 +158,11 @@
     <h5>Administration</h5>
   </div>
   <nav class="flex-grow-1 d-flex flex-column">
-    <h6 style="color: #0d6efd">Admin</h6>
-    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <h6>Admin</h6>
+    <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
     <a href="{% url 'faculty_list' %}">Faculty</a>
     <a href="{% url 'problem_upload' %}">Add Problem</a>
-    <h6 style="color: #0d6efd">Student</h6>
+    <h6>Student</h6>
     <a href="{% url 'student_list' %}">Change Password</a>
     <a href="{% url 'logout' %}" class="text-danger mt-auto">Logout</a>
   </nav>
@@ -80,9 +171,9 @@
 <!-- Main Content -->
 <div class="content-box">
 
-  <!-- Welcome -->
-  <div class="alert alert-info text-center">
-    <b>Welcome {{ request.user.get_full_name|default:request.user.username }}!!</b>
+  <!-- Welcome Box -->
+  <div class="welcome-box text-center">
+    👋 Welcome, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>!
   </div>
 
   <!-- Stats Section -->

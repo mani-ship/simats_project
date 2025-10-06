@@ -74,7 +74,7 @@ def dashboard(request):
     problem_count = Problem.objects.count()
 
     submissions = Submission.objects.select_related("student", "faculty", "problem").order_by("-submitted_at")
-    paginator = Paginator(submissions, 10)
+    paginator = Paginator(submissions, 8)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
